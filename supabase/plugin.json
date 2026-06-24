@@ -1,0 +1,32 @@
+{
+  "id": "figma",
+  "name": "Figma",
+  "version": "1.2.0",
+  "description": "Figma design tools — read designs, export assets, sync components",
+  "author": "Figma",
+  "icon": "https://...",
+  "docs": "https://figma.com/developers/mcp",
+  "category": "design",
+  "scope": "project",
+  "skills": [
+    "https://github.com/figma/superconsole/tree/main/skills/figma-reader",
+    "https://github.com/figma/superconsole/tree/main/skills/figma-exporter"
+  ],
+  "commands": [
+    "https://github.com/figma/superconsole/tree/main/commands/export-assets.md",
+    "https://github.com/figma/superconsole/tree/main/commands/sync-components.md"
+  ],
+  "mcp": {
+    "command": "npx",
+    "args": ["@figma/mcp@latest"],
+    "env": { "FIGMA_ACCESS_TOKEN": "" }
+  },
+  "hooks": [],
+  "connector": {
+    "id": "figma",
+    "required": true,
+    "auth_type": "oauth",
+    "oauth_url": "https://www.figma.com/oauth",
+    "scopes": ["files:read", "file_content:read"]
+  }
+}
