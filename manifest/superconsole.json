@@ -1,0 +1,472 @@
+# SuperConsole Plugin Specification
+## How to build a plugin for the SuperConsole marketplace
+
+A SuperConsole plugin is a folder in a GitHub repo with a `plugin.json` manifest
+and asset files. When a user installs your plugin, SuperConsole fetches everything
+declared in the manifest and configures it automatically.
+
+---
+
+## Folder Structure
+
+```
+your-plugin-repo/
+  plugin.json              ← required: the manifest
+  README.md                ← required: description for the marketplace
+
+  skills/
+    <skill-name>/
+      SKILL.md             ← required: skill instructions
+      README.md            ← optional: skill description
+
+  commands/
+    <command-name>.md      ← slash command files
+
+  hooks/
+    session-start.sh       ← runs when CLI session opens
+    session-end.sh         ← runs when CLI session closes
+    before-prompt.sh       ← runs before every LLM call
+    before-mcp.sh          ← runs before MCP tool execution
+    before-shell.sh        ← runs before shell command
+
+  agents/
+    <agent-name>/
+      agent.md             ← agent definition file
+      README.md            ← optional
+
+  rules/
+    <rule-name>.md         ← behavior rules injected into system prompt
+```
+
+**Example — Shopify plugin:**
+```
+shopify-plugin/
+  plugin.json
+  README.md
+  skills/
+    shopify-store-manager/
+      SKILL.md
+    shopify-product-writer/
+      SKILL.md
+  commands/
+    check-orders.md
+    update-products.md
+    check-inventory.md
+  agents/
+    store-manager/
+      agent.md
+  hooks/
+    session-end.sh
+  rules/
+    shopify-guidelines.md
+```
+
+**Example — Supabase plugin (multiple MCPs):**
+```
+supabase-plugin/
+  plugin.json
+  README.md
+  skills/
+    supabase-query/
+      SKILL.md
+    supabase-edge-functions/
+      SKILL.md
+  commands/
+    query-table.md
+    create-migration.md
+    deploy-function.md
+```
+
+---
+
+## `plugin.json` — Full Specification
+
+```json
+{
+  "id": "shopify",
+  "name": "Shopify",
+  "version": "1.0.0",
+  "description": "Manage your Shopify store — products, orders, customers, inventory",
+  "author": "SuperConsole",
+  "icon": "🛍️",
+  "category": "business",
+  "scope": "project",
+  "docs": "https://github.com/SuperConsoleAI/plugins/tree/main/shopify",
+  "github_url": "https://github.com/SuperConsoleAI/plugins/tree/main/shopify",
+
+  "skills": [
+    "https://github.com/SuperConsoleAI/plugins/tree/main/shopify/skills/shopify-store-manager",
+    "https://github.com/SuperConsoleAI/plugins/tree/main/shopify/skills/shopify-product-writer"
+  ],
+
+  "commands": [
+    "https://github.com/SuperConsoleAI/plugins/blob/main/shopify/commands/check-orders.md",
+    "https://github.com/SuperConsoleAI/plugins/blob/main/shopify/commands/update-products.md",
+    "https://github.com/SuperConsoleAI/plugins/blob/main/shopify/commands/check-inventory.md"
+  ],
+
+  "agents": [
+    "https://github.com/SuperConsoleAI/plugins/tree/main/shopify/agents/store-manager"
+  ],
+
+  "rules": [
+    "https://github.com/SuperConsoleAI/plugins/blob/main/shopify/rules/shopify-guidelines.md"
+  ],
+
+  "hooks": [
+    "https://github.com/SuperConsoleAI/plugins/blob/main/shopify/hooks/session-end.sh"
+  ],
+
+  "mcp": [
+    {
+      "id": "shopify-dev",
+      "name": "Shopify Dev MCP",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@shopify/dev-mcp@latest"],
+      "env": {
+        "SHOPIFY_ACCESS_TOKEN": ""
+      }
+    }
+  ],
+
+  "connectors": [
+    {
+      "id": "shopify",
+      "required": true
+    }
+  ]
+}
+```
+
+---
+
+## Multiple MCPs Example (Supabase)
+
+```json
+{
+  "id": "supabase",
+  "name": "Supabase",
+  "version": "1.0.0",
+  "description": "Full Supabase access — database, edge functions, storage, management",
+  "author": "SuperConsole",
+  "icon": "⚡",
+  "category": "developer",
+  "scope": "project",
+
+  "skills": [
+    "https://github.com/SuperConsoleAI/plugins/tree/main/supabase/skills/supabase-query",
+    "https://github.com/SuperConsoleAI/plugins/tree/main/supabase/skills/supabase-edge-functions"
+  ],
+
+  "commands": [
+    "https://github.com/SuperConsoleAI/plugins/blob/main/supabase/commands/query-table.md",
+    "https://github.com/SuperConsoleAI/plugins/blob/main/supabase/commands/create-migration.md",
+    "https://github.com/SuperConsoleAI/plugins/blob/main/supabase/commands/deploy-function.md"
+  ],
+
+  "agents": [],
+  "rules": [],
+  "hooks": [],
+
+  "mcp": [
+    {
+      "id": "supabase",
+      "name": "Supabase MCP",
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp"
+    },
+    {
+      "id": "supabase-management",
+      "name": "Supabase Management MCP",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@supabase/mcp-server-supabase@latest"],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": ""
+      }
+    }
+  ],
+
+  "connectors": [
+    {
+      "id": "supabase",
+      "required": true
+    }
+  ]
+}
+```
+
+---
+
+## Multiple Connectors Example (Google Workspace)
+
+```json
+{
+  "id": "google-workspace",
+  "name": "Google Workspace",
+  "version": "1.0.0",
+  "description": "Gmail, Drive, Calendar — full Google Workspace access",
+  "author": "SuperConsole",
+  "icon": "🔵",
+  "category": "productivity",
+  "scope": "project",
+
+  "skills": [
+    "https://github.com/SuperConsoleAI/plugins/tree/main/google-workspace/skills/gmail-manager",
+    "https://github.com/SuperConsoleAI/plugins/tree/main/google-workspace/skills/drive-organizer"
+  ],
+
+  "commands": [
+    "https://github.com/SuperConsoleAI/plugins/blob/main/google-workspace/commands/send-email.md",
+    "https://github.com/SuperConsoleAI/plugins/blob/main/google-workspace/commands/find-file.md",
+    "https://github.com/SuperConsoleAI/plugins/blob/main/google-workspace/commands/check-calendar.md"
+  ],
+
+  "agents": [
+    "https://github.com/SuperConsoleAI/plugins/tree/main/google-workspace/agents/email-manager"
+  ],
+
+  "rules": [
+    "https://github.com/SuperConsoleAI/plugins/blob/main/google-workspace/rules/email-tone.md"
+  ],
+
+  "hooks": [],
+
+  "mcp": [
+    {
+      "id": "gmail-mcp",
+      "name": "Gmail MCP",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@google/gmail-mcp@latest"],
+      "env": {
+        "GMAIL_ACCESS_TOKEN": ""
+      }
+    },
+    {
+      "id": "gdrive-mcp",
+      "name": "Google Drive MCP",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@google/drive-mcp@latest"],
+      "env": {
+        "GDRIVE_ACCESS_TOKEN": ""
+      }
+    }
+  ],
+
+  "connectors": [
+    {
+      "id": "gmail",
+      "required": true
+    },
+    {
+      "id": "google_drive",
+      "required": false
+    },
+    {
+      "id": "google_calendar",
+      "required": false
+    }
+  ]
+}
+```
+
+---
+
+## MCP Type Reference
+
+### HTTP (remote server)
+```json
+{
+  "id": "supabase",
+  "name": "Supabase MCP",
+  "type": "http",
+  "url": "https://mcp.supabase.com/mcp"
+}
+```
+
+### STDIO (local process via npx)
+```json
+{
+  "id": "github",
+  "name": "GitHub MCP",
+  "type": "stdio",
+  "command": "npx",
+  "args": ["@github/mcp-server@latest"],
+  "env": {
+    "GITHUB_TOKEN": ""
+  }
+}
+```
+
+### STDIO (local process via node)
+```json
+{
+  "id": "custom-mcp",
+  "name": "Custom MCP",
+  "type": "stdio",
+  "command": "node",
+  "args": ["/path/to/server.js"],
+  "env": {
+    "API_KEY": ""
+  }
+}
+```
+
+---
+
+## Asset File Formats
+
+### SKILL.md
+```markdown
+---
+name: shopify-store-manager
+description: Manage Shopify store products, orders, and customers
+version: 1.0.0
+tags: [shopify, ecommerce, store]
+---
+
+You are a Shopify store management expert.
+
+When working with this store:
+- Always check inventory before creating orders
+- Use the Shopify connector for all API calls
+- Format currency using the store's default currency
+
+## Capabilities
+- List and update products
+- Check and fulfill orders
+- Manage customer records
+- Update inventory levels
+```
+
+### Command file (`commands/check-orders.md`)
+```markdown
+---
+name: check-orders
+slash: /check-orders
+description: Check recent Shopify orders and flag any issues
+---
+
+Check the last 20 orders in Shopify.
+Identify any: unfulfilled orders older than 24h, 
+refund requests, low inventory warnings.
+Write a summary to inbox.
+```
+
+### Agent file (`agents/store-manager/agent.md`)
+```markdown
+---
+name: store-manager
+description: Autonomous Shopify store monitoring agent
+connectors: [shopify]
+schedule: "0 8 * * *"
+run_mode: cli
+cli: claude
+---
+
+You are the store manager agent for this Shopify project.
+Every morning check: new orders, inventory levels, pending refunds.
+Write a daily brief to inbox for approval.
+```
+
+### Rule file (`rules/shopify-guidelines.md`)
+```markdown
+---
+name: shopify-guidelines
+description: Guidelines for working with this Shopify store
+---
+
+When working with this Shopify store:
+- Always confirm before cancelling orders
+- Never delete products — archive them instead
+- Check inventory before promising stock to customers
+- All prices in USD unless specified otherwise
+```
+
+### Hook file (`hooks/session-end.sh`)
+```bash
+#!/bin/bash
+# Runs when a CLI session ends in this project
+# Update HEARTBEAT.md with last activity
+
+echo "Last Shopify session: $(date)" >> "$SUPERCONSOLE_WORKSPACE/HEARTBEAT.md"
+```
+
+---
+
+## catalog.json (repo root index)
+
+The `SuperConsoleAI/plugins` repo must have a `catalog.json` at root.
+SuperConsole app fetches this to populate the marketplace.
+
+```json
+[
+  {
+    "id": "shopify",
+    "name": "Shopify",
+    "description": "Manage your Shopify store",
+    "category": "business",
+    "featured": true,
+    "icon": "🛍️",
+    "path": "shopify/plugin.json",
+    "version": "1.0.0",
+    "author": "SuperConsole",
+    "install_count": 0
+  },
+  {
+    "id": "supabase",
+    "name": "Supabase",
+    "description": "Full Supabase database and functions access",
+    "category": "developer",
+    "featured": true,
+    "icon": "⚡",
+    "path": "supabase/plugin.json",
+    "version": "1.0.0",
+    "author": "SuperConsole",
+    "install_count": 0
+  },
+  {
+    "id": "google-workspace",
+    "name": "Google Workspace",
+    "description": "Gmail, Drive, Calendar access",
+    "category": "productivity",
+    "featured": false,
+    "icon": "🔵",
+    "path": "google-workspace/plugin.json",
+    "version": "1.0.0",
+    "author": "SuperConsole",
+    "install_count": 0
+  }
+]
+```
+
+---
+
+## Scope Field
+
+```
+"scope": "project"   → installs to .superconsole/ in workspace
+"scope": "account"   → installs to <app_data>/ machine-wide
+"scope": "org"       → installs to <app_data>/ + org connectors
+```
+
+---
+
+## Publishing to Marketplace
+
+1. Fork `github.com/SuperConsoleAI/plugins`
+2. Create folder: `plugins/<your-plugin-id>/`
+3. Add `plugin.json` + asset files
+4. Add entry to `catalog.json`
+5. Open a Pull Request
+6. SuperConsole team reviews + merges
+7. Available in marketplace on next app sync
+
+Or install privately by URL:
+```
+SuperConsole → Customize → Plugins → [+ Add from GitHub URL]
+→ paste your repo URL → Install
+```
