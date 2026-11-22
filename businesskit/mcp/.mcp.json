@@ -1,0 +1,7 @@
+{
+  "businesskit": {
+    "type": "stdio",
+    "command": "businesskit",
+    "args": ["--mcp"]
+  }
+}

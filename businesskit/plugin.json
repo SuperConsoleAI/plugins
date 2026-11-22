@@ -1,0 +1,17 @@
+{
+  "id": "businesskit",
+  "name": "BusinessKit",
+  "version": "1.0.5",
+  "description": "Universal BusinessKit autonomous agent kit — POS billing, B2B invoices, inventory restocking, CRM contacts, customer support triage, and website publishing via native BusinessKit MCP server.",
+  "author": "BusinessKit",
+  "category": "business",
+  "scope": "project",
+  "docs": "https://github.com/businesskitai/businesskit-agent",
+  "github_url": "https://github.com/businesskitai/businesskit-agent",
+  "mcp": {
+    "source": "./mcp/.mcp.json"
+  },
+  "skills": [],
+  "commands": [],
+  "hooks": []
+}
